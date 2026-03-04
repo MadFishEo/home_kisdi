@@ -1,30 +1,58 @@
-import { useState } from 'react'
-
-const allNews = [
-  { id: 1, title: '6G 이동통신 표준화 대응 전략 연구 보고서 발간', category: 'ICT정책', date: '2026.02.28', author: '김정책', desc: 'KISDI 연구팀이 6G 시대를 대비한 국내 표준화 전략과 주파수 정책 방향을 담은 보고서를 발간했습니다.' },
-  { id: 2, title: '플랫폼 경제의 독과점 규제 방안 연구', category: '디지털경제', date: '2026.02.24', author: '이디지털', desc: '빅테크 플랫폼의 시장 지배력 남용 사례를 분석하고 공정경쟁 환경 조성을 위한 규제 방안을 모색합니다.' },
-  { id: 3, title: 'AI 기반 허위정보 탐지 시스템 연구', category: '미디어', date: '2026.02.20', author: '박미디어', desc: '딥페이크와 허위정보 확산 방지를 위한 AI 탐지 기술과 미디어 정책 방향을 연구합니다.' },
-  { id: 4, title: '디지털 포용 정책 성과 평가 연구', category: '정책평가', date: '2026.02.15', author: '최포용', desc: '취약계층의 디지털 접근성 향상을 위한 정책 효과를 분석하고 개선 방향을 제시합니다.' },
-  { id: 5, title: '데이터 산업 활성화를 위한 법제도 개선 방안', category: '법제연구', date: '2026.02.10', author: '정데이터', desc: '개인정보 보호와 데이터 활용의 균형을 위한 법제도 정비 방안을 연구합니다.' },
-  { id: 6, title: '메타버스 산업 육성을 위한 정책 인프라 구축', category: '신산업', date: '2026.02.05', author: '한가상', desc: '국내 메타버스 산업의 경쟁력 강화를 위한 규제 샌드박스 확대와 지원 정책을 분석합니다.' },
-  { id: 7, title: '2026 KISDI ICT 정책 포럼 개최 안내', category: 'ICT정책', date: '2026.02.01', author: '홍보팀', desc: 'KISDI가 주최하는 연례 ICT 정책 포럼이 3월 서울에서 개최될 예정입니다. 국내외 전문가 300여명이 참가합니다.' },
-  { id: 8, title: '국제 디지털 경제 협력 컨퍼런스 공동 주최', category: '디지털경제', date: '2026.01.28', author: '국제협력팀', desc: 'KISDI가 OECD와 공동으로 디지털 경제 정책 국제 컨퍼런스를 서울에서 개최합니다.' },
-  { id: 9, title: '사이버보안 정책 역량 강화 교육 프로그램 운영', category: '정책평가', date: '2026.01.20', author: '이보안', desc: '공공기관 사이버보안 담당자를 위한 전문 역량 강화 교육 프로그램이 성황리에 진행되었습니다.' },
-]
-
-const categories = ['전체', 'ICT정책', '디지털경제', '미디어', '법제연구', '신산업', '정책평가']
+import { useMemo, useState } from 'react'
 
 const categoryColors = {
-  'ICT정책': 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
-  '디지털경제': 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
-  '미디어': 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-  '법제연구': 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-  '신산업': 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
-  '정책평가': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+  ICT정책: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+  디지털경제: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+  미디어: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  법제연구: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  신산업: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+  정책평가: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+  기타: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
 }
 
-export default function News() {
+function normalizeItems(apiItems) {
+  if (!Array.isArray(apiItems)) return []
+
+  return apiItems.map((item) => {
+    const date = new Date(item.publishedAt ?? item.createdAt ?? '')
+    const dateStr = Number.isNaN(date.getTime())
+      ? ''
+      : date.toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        })
+
+    const plain = String(item.content || '')
+      .replace(/[#*_>`]/g, '')
+      .replace(/\n+/g, ' ')
+      .trim()
+    const desc = plain.length <= 160 ? plain : `${plain.slice(0, 160)}…`
+
+    const category = item.hashtags?.[0] ?? '기타'
+
+    return {
+      id: item._id,
+      title: item.title,
+      category,
+      date: dateStr,
+      author: item.author,
+      desc,
+    }
+  })
+}
+
+export default function News({ items }) {
   const [active, setActive] = useState('전체')
+  const allNews = useMemo(() => normalizeItems(items), [items])
+
+  const categories = useMemo(() => {
+    const set = new Set()
+    allNews.forEach((n) => {
+      if (n.category) set.add(n.category)
+    })
+    return ['전체', ...Array.from(set)]
+  }, [allNews])
 
   const filtered = active === '전체' ? allNews : allNews.filter((n) => n.category === active)
 
@@ -63,13 +91,21 @@ export default function News() {
               className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300 cursor-pointer border-t-2 border-t-kisdi-red"
             >
               <div className="flex items-center justify-between mb-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${categoryColors[item.category] || 'bg-gray-100 text-gray-700'}`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    categoryColors[item.category] || categoryColors['기타']
+                  }`}
+                >
                   {item.category}
                 </span>
                 <span className="text-gray-400 text-xs">{item.date}</span>
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">{item.title}</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-4">{item.desc}</p>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                {item.title}
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-4">
+                {item.desc}
+              </p>
               <p className="text-xs text-gray-400">by {item.author}</p>
             </article>
           ))}
@@ -83,4 +119,32 @@ export default function News() {
       </div>
     </div>
   )
+}
+
+export async function getServerSideProps() {
+  const base = process.env.VITE_HOME_SERVER_BASE_URL
+  const siteKey = process.env.VITE_SITE_KEY || 'kisdi'
+
+  if (!base) {
+    console.error('VITE_HOME_SERVER_BASE_URL is not set')
+    return { props: { items: [] } }
+  }
+
+  try {
+    const res = await fetch(`${base}/api/public/news?site=${siteKey}`)
+    if (!res.ok) {
+      console.error('Failed to fetch news from home_server', await res.text())
+      return { props: { items: [] } }
+    }
+
+    const json = await res.json()
+    return {
+      props: {
+        items: json?.data?.items ?? [],
+      },
+    }
+  } catch (err) {
+    console.error('Error fetching news from home_server', err)
+    return { props: { items: [] } }
+  }
 }
