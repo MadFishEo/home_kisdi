@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import NewsClient, { type NewsItem } from './NewsClient'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: '뉴스 & 공지 | KISDI',
   description: '정보통신정책연구원의 최신 소식을 전해드립니다.',
