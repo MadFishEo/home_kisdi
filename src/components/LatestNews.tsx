@@ -3,8 +3,10 @@ import Link from 'next/link'
 type ApiNewsItem = {
   _id: string
   title: string
+  slug?: string
   content: string
   author: string
+  visible?: boolean
   publishedAt?: string
   createdAt?: string
   hashtags?: string[]
@@ -64,7 +66,7 @@ export default async function LatestNews() {
           </Link>
         </div>
 
-        <Link href={`/news/${featured._id}`} className="block">
+        <Link href={`/news/${featured.slug || featured._id}`} className="block">
           <article className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow duration-300 mb-6">
             <div className="p-8">
               <div className="flex items-center gap-3 mb-4">
@@ -91,7 +93,7 @@ export default async function LatestNews() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {rest.map((item) => (
-            <Link key={item._id} href={`/news/${item._id}`} className="flex">
+            <Link key={item._id} href={`/news/${item.slug || item._id}`} className="flex">
               <article className="bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300 flex flex-col flex-1">
                 <div className="p-5 flex flex-col flex-1">
                   <div className="flex items-center justify-between mb-3">
