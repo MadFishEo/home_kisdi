@@ -75,14 +75,6 @@ export default function Footer() {
                 </svg>
                 02-570-4114
               </li>
-              <li className="mt-2">
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center px-4 py-2 bg-kisdi-red text-white text-sm rounded-sm hover:bg-red-700 transition-colors"
-                >
-                  문의하기
-                </Link>
-              </li>
             </ul>
           </div>
         </div>
